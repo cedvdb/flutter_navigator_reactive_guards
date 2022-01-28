@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   rxdart: ^0.27.2
+  equatable: ^2.0.3
 
 dev_dependencies:
   beamer: ^1.0.0-pre.15.0

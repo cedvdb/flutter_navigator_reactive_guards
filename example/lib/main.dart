@@ -40,7 +40,7 @@ class AuthGuard extends ReactiveGuard<bool> {
   }
 
   @override
-  Stream<bool> get stream => _authStatusController.stream;
+  Stream<bool> get stream => _authStatusController.stream.asBroadcastStream();
 }
 
 // app
@@ -48,32 +48,35 @@ class AuthGuard extends ReactiveGuard<bool> {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
+  static final AuthGuard _authGuard = AuthGuard();
+  // beamer used here but other libraries can be used
+  static final routerDelegate = BeamerDelegate(
+    locationBuilder: RoutesLocationBuilder(
+      routes: {
+        Routes.login: (context, state) => LoginPage(
+              onLoginPress: () => _authGuard.login(),
+            ),
+        Routes.home: (context, state) => HomePage(
+              onLogoutPress: () => _authGuard.logout(),
+            ),
+      },
+    ),
+  );
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final authGuard = AuthGuard();
+    // beamer used here but other libraries can be used
 
-    /// beamer used here but other libraries can be used
-    final routerDelegate = BeamerDelegate(
-      locationBuilder: RoutesLocationBuilder(
-        routes: {
-          Routes.login: (context, state) => LoginPage(
-                onLoginPress: () => authGuard.login(),
-              ),
-          Routes.home: (context, state) => HomePage(
-                onLogoutPress: () => authGuard.logout(),
-              ),
-        },
-      ),
-    );
     return BeamerProvider(
       routerDelegate: routerDelegate,
       child: MaterialApp.router(
         routeInformationParser: BeamerParser(),
         routerDelegate: routerDelegate,
         builder: (ctx, child) => ReactiveGuardDispatcher(
+          key: const ValueKey('reactive-guard'),
           child: child ?? Container(),
-          guards: [authGuard],
+          guards: [_authGuard],
           onRedirectRequest: (req) => Beamer.of(ctx).beamToNamed(req.target),
         ),
       ),
@@ -91,7 +94,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onLoginPress,
       child: const Text('login'),
     );
   }
@@ -107,7 +110,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onLogoutPress,
       child: const Text('logout'),
     );
   }

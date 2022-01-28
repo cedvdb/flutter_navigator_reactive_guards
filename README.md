@@ -1,39 +1,64 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+## Reactive guards for flutter Navigator 2.0. 
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+When your state changes, your url state might need to change too. 
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+The typical example is when the user signs out, he should be redirected to the login page. 
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+ - Reactive guards
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+### 1. Create your reactive guards:
+
+Create your reactive guard that expose a `stream` that will be listened to in order to resolve the new route.
+All your guards `resolve` method will be called in sequence. This resolve method can return 3 possible values:
+
+  - Redirect => redirects to a new route, subsequent guards `resolve` won't be called
+  - Loading => displays a loading page, subsequent guards won't be called
+  - Next => go to next guard `resolve` or if no subsequent guards, stay on current page.
 
 ```dart
-const like = 'sample';
+class ExampleAuthGuard extends ReactiveGuard<bool> {
+
+  @override
+  ReactiveGuardResult resolve(bool streamValue, String currentRoute) {
+
+    if (streamValue == true) {
+      if (currentRoute == '/login') {
+        return const Redirect(target: '/login');
+      } else {
+        return const Next();
+      }
+    } else {
+      if (currentRoute == '/login') {
+        return const Next();
+      } else {
+        return const Redirect(target: '/login');
+      }
+    }
+  }
+
+  // replace MyAuthService with your own in house service
+  @override
+  Stream<bool> get stream => MyAuthService.authenticatedStream;
+}
 ```
 
-## Additional information
+### 2. add the `ReactiveGuardDispatcher`
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+```dart
+// in case you are using beamer
+MaterialApp.router(
+  routeInformationParser: BeamerParser(), 
+  routerDelegate: routerDelegate,
+  builder: (ctx, child) => ReactiveGuardDispatcher(
+    child: child ?? Container(),
+    guards: [authGuard],
+    onRedirectRequest: (req) => Beamer.of(ctx).beamToNamed(req.target),
+  ),
+),
+```
+
+

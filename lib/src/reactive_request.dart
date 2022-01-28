@@ -1,4 +1,6 @@
-class RedirectRequest {
+import 'package:equatable/equatable.dart';
+
+class RedirectRequest with EquatableMixin {
   final String origin;
   final String target;
 
@@ -8,17 +10,5 @@ class RedirectRequest {
   });
 
   @override
-  String toString() => 'RedirectRequest(origin: $origin, target: $target)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is RedirectRequest &&
-        other.origin == origin &&
-        other.target == target;
-  }
-
-  @override
-  int get hashCode => origin.hashCode ^ target.hashCode;
+  List<Object?> get props => [origin, target];
 }

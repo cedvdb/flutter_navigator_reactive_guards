@@ -16,6 +16,7 @@ import 'package:rxdart/rxdart.dart';
 ///     return ReactiveGuardDispatcher(
 ///       key: const ValueKey('reactive-guard'),
 ///       child: child ?? Container(),
+///       onRedirectRequest: (req) => Beamer.of(ctx).beamToNamed(req.target),
 ///     );
 ///   },
 /// ),
@@ -44,9 +45,9 @@ class _ReactiveGuardDispatcherState extends State<ReactiveGuardDispatcher> {
   late final Stream<ReactiveGuardResult> _redirectStream;
 
   @override
-  void initState() {
+  didChangeDependencies() {
     _redirectStream = _buildRedirectStream();
-    super.initState();
+    super.didChangeDependencies();
   }
 
   Stream<ReactiveGuardResult> _buildRedirectStream() {
@@ -94,7 +95,9 @@ class _ReactiveGuardDispatcherState extends State<ReactiveGuardDispatcher> {
         if (!snap.hasData) {
           return Container();
         }
+
         final result = snap.data as ReactiveGuardResult;
+
         if (result is Loading) {
           return result.loadingScreen;
         }
@@ -110,6 +113,7 @@ class _ReactiveGuardDispatcherState extends State<ReactiveGuardDispatcher> {
             widget.onRedirectRequest(redirect);
           }
         }
+        // result is Next
         return widget.child;
       },
     );

@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
 /// Base class for reactive guards
@@ -21,29 +22,25 @@ abstract class ReactiveGuardResult {
   const ReactiveGuardResult();
 }
 
-class Next extends ReactiveGuardResult {
+class Next extends ReactiveGuardResult with EquatableMixin {
   const Next();
+
+  @override
+  List<Object?> get props => [];
 }
 
-class Loading extends ReactiveGuardResult {
+class Loading extends ReactiveGuardResult with EquatableMixin {
   final Widget loadingScreen;
   const Loading({required this.loadingScreen});
+
+  @override
+  List<Object?> get props => [loadingScreen];
 }
 
-class Redirect extends ReactiveGuardResult {
+class Redirect extends ReactiveGuardResult with EquatableMixin {
   final String target;
   const Redirect({required this.target});
 
   @override
-  String toString() => 'Redirect(target: $target)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is Redirect && other.target == target;
-  }
-
-  @override
-  int get hashCode => target.hashCode;
+  List<Object?> get props => [target];
 }
